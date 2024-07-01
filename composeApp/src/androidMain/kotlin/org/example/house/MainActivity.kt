@@ -1,28 +1,21 @@
 package org.example.house
 
 import App
-import AppState
 import UserLocation
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
-import android.location.Location
-import android.location.LocationListener
 import android.location.LocationManager
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.lifecycleScope
-import kotlinx.coroutines.channels.BufferOverflow
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.filterNotNull
-import kotlinx.coroutines.flow.last
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.launch
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class MainActivity : ComponentActivity() {
 
@@ -31,6 +24,8 @@ class MainActivity : ComponentActivity() {
     }
 
     private val mutableFlow = MutableStateFlow<UserLocation?>(null)
+
+    val houseViewModel: HouseViewModel by viewModel()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -64,10 +59,15 @@ class MainActivity : ComponentActivity() {
         mutableFlow
             .filterNotNull()
             .onEach { i ->
+                houseViewModel.loadLaunches(i)
+            }
+            .launchIn(lifecycleScope)
+
+        houseViewModel
+            .state
+            .onEach { i ->
                 setContent {
-                    App(
-                        AppState(userLocation = i)
-                    )
+                    App(i)
                 }
             }
             .launchIn(lifecycleScope)

@@ -1,3 +1,3 @@
 data class AppState(
-    val userLocation: UserLocation
+    val state: UserLocation
 )
