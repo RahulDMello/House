@@ -6,8 +6,12 @@ import entity.Houses
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.plugins.onDownload
 import io.ktor.client.request.get
+import io.ktor.client.statement.bodyAsChannel
+import io.ktor.client.statement.bodyAsText
 import io.ktor.serialization.kotlinx.json.json
+import io.ktor.util.InternalAPI
 import kotlinx.serialization.json.Json
 import network.LocalIP.HOST
 import network.LocalIP.PORT
@@ -28,7 +32,13 @@ class HouseApi {
                 parameters.append("lat", userLocation.lat.toString())
                 parameters.append("lon", userLocation.lon.toString())
             }
-        }.body()
+            println("RAHUL - ${url.buildString()}")
+            onDownload { bytesSentTotal, contentLength ->
+                println("RAHUL - Received $bytesSentTotal bytes from $contentLength")
+            }
+        }.body<Houses>().also {
+            println("RAHUL - body - ${it.data.size}")
+        }
     }
 
     companion object {
